@@ -91,7 +91,7 @@ menai-roofing-website/
 2. Upload all files to the repository
 3. Go to repository Settings > Pages
 4. Select source branch (usually `main`)
-5. Your site will be available at `https://username.github.io/repository-name`
+5. Your site will be available at `https://github.com/ireccode/menairoofing-website`
 
 ### Cloudflare Pages
 
