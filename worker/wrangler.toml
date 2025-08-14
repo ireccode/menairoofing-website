@@ -1,0 +1,16 @@
+name = "menai-contact-worker"
+main = "src/index.ts"
+compatibility_date = "2024-11-01"
+
+# If you own a zone and want to route the Worker under your domain, uncomment and set:
+# routes = [
+#   { pattern = "example.com/api/contact", zone_name = "example.com" }
+# ]
+
+[vars]
+# No plain vars committed. Secrets will be set via `wrangler secret put`:
+# TO_EMAIL, FROM_EMAIL, FROM_NAME
+
+# wrangler.toml (wrangler v3.88.0^)
+[observability.logs]
+enabled = true

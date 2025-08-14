@@ -186,19 +186,42 @@ if (contactForm) {
             const originalText = submitButton.textContent;
             submitButton.disabled = true;
             submitButton.textContent = 'SENDING...';
-            
-            // Simulate form submission (replace with actual submission logic)
-            setTimeout(() => {
-                // In a real implementation, you would send the data to your server here
-                // For now, we'll just redirect to the thank you page
-                window.location.href = 'thank-you.html';
-            }, 1500);
-            
-            // Reset button after timeout (in case redirect fails)
-            setTimeout(() => {
+
+            // Build payload from contact.html fields
+            const payload = {
+                fullName: formData.get('fullName') || '',
+                email: formData.get('email') || '',
+                phone: formData.get('phone') || '',
+                message: formData.get('message') || ''
+            };
+
+            // Send to endpoint (configurable via window.CONTACT_ENDPOINT)
+            const ENDPOINT = (window.CONTACT_ENDPOINT && String(window.CONTACT_ENDPOINT))
+                || 'https://menai-contact-worker.ireknie00.workers.dev'
+                || '/api/contact';
+            console.log('Submitting contact form to', ENDPOINT, payload);
+            fetch(ENDPOINT, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            })
+            .then(async (res) => {
+                const data = await res.json().catch(() => ({ success: false, error: 'Invalid JSON response' }));
+                if (res.ok && data.success) {
+                    console.log('Contact form submission success');
+                    window.location.href = 'thank-you.html';
+                } else {
+                    console.warn('Contact form submission failed', data);
+                    throw new Error(data.error || 'Submission failed');
+                }
+            })
+            .catch((err) => {
+                handleFormError(err);
+            })
+            .finally(() => {
                 submitButton.disabled = false;
                 submitButton.textContent = originalText;
-            }, 5000);
+            });
         } else {
             // Scroll to first error
             const firstError = this.querySelector('.error-message:not(:empty)');
