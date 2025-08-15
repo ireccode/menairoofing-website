@@ -116,6 +116,7 @@ export const onRequest = async (context) => {
           },
         ],
         from: { email: FROM_EMAIL, name: FROM_NAME },
+        headers: { 'Reply-To': `${name} <${email}>` },
         subject,
         content: [
           { type: 'text/plain', value: toTextFallback({ name, email, phone, message, submittedAt }) },
