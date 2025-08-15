@@ -112,34 +112,79 @@ export default {
         }
         console.log('[contact-worker] Mailgun send OK');
       } else {
-        // Default: MailChannels (requires authorized From domain)
-        console.log('[contact-worker] Using MailChannels provider');
-        const sendResp = await fetch('https://api.mailchannels.net/tx/v1/send', {
-          method: 'POST',
-          headers: { 'content-type': 'application/json' },
-          body: JSON.stringify({
-            personalizations: [
-              {
-                to: [{ email: TO_EMAIL, name: 'Website Contact' }],
-                // DKIM optional: env.DKIM_DOMAIN, env.DKIM_SELECTOR, env.DKIM_PRIVATE_KEY
+        // Prefer Cloudflare Email Workers (native send) if binding is configured
+        if ((env as any)?.SEND && typeof (env as any).SEND.send === 'function') {
+          console.log('[contact-worker] Using Cloudflare Email Workers (native send)');
+          const boundary = '=_cf_' + Math.random().toString(36).slice(2);
+          const textBody = toTextFallback({ name, email, phone, message, submittedAt });
+          const emailContent = `MIME-Version: 1.0\n`
+            + `From: ${FROM_NAME} <${FROM_EMAIL}>\n`
+            + `To: ${TO_EMAIL}\n`
+            + `Subject: ${subject}\n`
+            + `Reply-To: ${name} <${email}>\n`
+            + `Content-Type: multipart/alternative; boundary=\"${boundary}\"\n\n`
+            + `--${boundary}\n`
+            + `Content-Type: text/plain; charset=utf-8\n`
+            + `Content-Transfer-Encoding: 7bit\n\n`
+            + `${textBody}\n\n`
+            + `--${boundary}\n`
+            + `Content-Type: text/html; charset=utf-8\n`
+            + `Content-Transfer-Encoding: 7bit\n\n`
+            + `${html}\n\n`
+            + `--${boundary}--\n`;
+
+          // Create EmailMessage(from, to, raw)
+          // @ts-ignore EmailMessage provided by Email Workers runtime
+          const emailMessage = new EmailMessage(FROM_EMAIL, TO_EMAIL, emailContent);
+          await (env as any).SEND.send(emailMessage);
+          console.log('[contact-worker] CF Email send OK');
+        } else {
+          // Fallback: MailChannels (requires authorized From domain)
+          console.log('[contact-worker] Using MailChannels provider (fallback)');
+          // Prepare email data with proper DKIM and headers
+          const emailData = {
+            personalizations: [{
+              to: [{ email: TO_EMAIL, name: 'Website Contact' }],
+              dkim_domain: 'menairoofing.com',
+              dkim_selector: 'mailchannels',
+              dkim_private_key: env.DKIM_PRIVATE_KEY || undefined,
+            }],
+            from: { 
+              email: FROM_EMAIL, 
+              name: FROM_NAME 
+            },
+            reply_to: { email: email, name: name },
+            subject: subject,
+            content: [
+              { 
+                type: 'text/plain', 
+                value: toTextFallback({ name, email, phone, message, submittedAt }) 
+              },
+              { 
+                type: 'text/html', 
+                value: html 
               },
             ],
-            from: { email: FROM_EMAIL, name: FROM_NAME },
-            headers: { 'Reply-To': `${name} <${email}>` },
-            subject,
-            content: [
-              { type: 'text/plain', value: toTextFallback({ name, email, phone, message, submittedAt }) },
-              { type: 'text/html', value: html },
-            ],
-          }),
-        });
+          };
 
-        if (!sendResp.ok) {
-          const errText = await sendResp.text();
-          console.error('[contact-worker] MailChannels send failed', sendResp.status, errText.slice(0, 500));
-          return json({ success: false, error: 'Email send failed', details: errText.slice(0, 500) }, 502, allowOrigin);
+          console.log('[contact-worker] Sending email with data:', JSON.stringify(emailData, null, 2));
+          
+          const sendResp = await fetch('https://api.mailchannels.net/tx/v1/send', {
+            method: 'POST',
+            headers: { 
+              'content-type': 'application/json',
+              'X-MC-DKIM': 'true'
+            },
+            body: JSON.stringify(emailData),
+          });
+
+          if (!sendResp.ok) {
+            const errText = await sendResp.text();
+            console.error('[contact-worker] MailChannels send failed', sendResp.status, errText.slice(0, 500));
+            return json({ success: false, error: 'Email send failed', details: errText.slice(0, 500) }, 502, allowOrigin);
+          }
+          console.log('[contact-worker] MailChannels send OK');
         }
-        console.log('[contact-worker] MailChannels send OK');
       }
     } catch (e: any) {
       console.error('[contact-worker] Email service error', e);

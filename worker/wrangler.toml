@@ -14,3 +14,10 @@ compatibility_date = "2024-11-01"
 # wrangler.toml (wrangler v3.88.0^)
 [observability.logs]
 enabled = true
+
+# Bindings for Cloudflare Email Workers (send emails from Workers)
+# Docs: https://developers.cloudflare.com/email-routing/email-workers/send-email-workers/
+[[send_email]]
+name = "SEND"
+# This must be a verified destination address in Email Routing → Destination addresses
+destination_address = "info@menairoofing.com"
