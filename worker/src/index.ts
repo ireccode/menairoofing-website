@@ -2,6 +2,7 @@
 // Cloudflare Worker: Email handler for contact form
 // Deploy with: wrangler deploy --config worker/wrangler.toml
 // Secrets required: TO_EMAIL, FROM_EMAIL, FROM_NAME
+import { EmailMessage } from 'cloudflare:email';
 
 export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
@@ -78,7 +79,7 @@ export default {
     const subject = `New Website Contact from ${name}`;
     const html = buildHtmlEmail({ name, email, phone, message, submittedAt, raw: data });
 
-    const TO_EMAIL = env.TO_EMAIL || 'irek@smartechall.com';
+    const TO_EMAIL = env.TO_EMAIL || 'info@menairoofing.com';
     const FROM_EMAIL = env.FROM_EMAIL || 'noreply@menairoofing.com';
     const FROM_NAME = env.FROM_NAME || 'Menai Roofing Website';
 

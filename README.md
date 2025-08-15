@@ -104,6 +104,7 @@ Steps:
 3. Output directory: `/` (root).
 4. Ensure "Functions" are enabled (Pages detects the `functions/` directory automatically).
 5. Add environment variables (optional, improves deliverability):
+   - `TO_EMAIL` (e.g., `info@menairoofing.com`)
    - `FROM_EMAIL` (e.g., `noreply@menairoofing.com`)
    - `FROM_NAME` (e.g., `Menai Roofing Website`)
    - `DKIM_DOMAIN` / `DKIM_SELECTOR` / `DKIM_PRIVATE_KEY` (if you want DKIM signing; otherwise omit)
