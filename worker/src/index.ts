@@ -118,25 +118,30 @@ export default {
           console.log('[contact-worker] Using Cloudflare Email Workers (native send)');
           const boundary = '=_cf_' + Math.random().toString(36).slice(2);
           const textBody = toTextFallback({ name, email, phone, message, submittedAt });
-          const emailContent = `MIME-Version: 1.0\n`
-            + `From: ${FROM_NAME} <${FROM_EMAIL}>\n`
-            + `To: ${TO_EMAIL}\n`
-            + `Subject: ${subject}\n`
-            + `Reply-To: ${name} <${email}>\n`
-            + `Content-Type: multipart/alternative; boundary=\"${boundary}\"\n\n`
-            + `--${boundary}\n`
-            + `Content-Type: text/plain; charset=utf-8\n`
-            + `Content-Transfer-Encoding: 7bit\n\n`
-            + `${textBody}\n\n`
-            + `--${boundary}\n`
-            + `Content-Type: text/html; charset=utf-8\n`
-            + `Content-Transfer-Encoding: 7bit\n\n`
-            + `${html}\n\n`
-            + `--${boundary}--\n`;
+          const messageId = `<${Date.now()}.${Math.random().toString(36).slice(2)}@menairoofing.com>`;
+          const dateHeader = new Date().toUTCString();
+          const CRLF = "\r\n";
+          const emailContent = `MIME-Version: 1.0${CRLF}`
+            + `Message-ID: ${messageId}${CRLF}`
+            + `Date: ${dateHeader}${CRLF}`
+            + `From: ${FROM_NAME} <${FROM_EMAIL}>${CRLF}`
+            + `To: ${TO_EMAIL}${CRLF}`
+            + `Subject: ${subject}${CRLF}`
+            + `Reply-To: ${name} <${email}>${CRLF}`
+            + `Content-Type: multipart/alternative; boundary="${boundary}"${CRLF}${CRLF}`
+            + `--${boundary}${CRLF}`
+            + `Content-Type: text/plain; charset=utf-8${CRLF}`
+            + `Content-Transfer-Encoding: 7bit${CRLF}${CRLF}`
+            + `${textBody}${CRLF}${CRLF}`
+            + `--${boundary}${CRLF}`
+            + `Content-Type: text/html; charset=utf-8${CRLF}`
+            + `Content-Transfer-Encoding: 7bit${CRLF}${CRLF}`
+            + `${html}${CRLF}${CRLF}`
+            + `--${boundary}--${CRLF}`;
 
           // Create EmailMessage(from, to, raw)
           // @ts-ignore EmailMessage provided by Email Workers runtime
-          const emailMessage = new EmailMessage(FROM_EMAIL, TO_EMAIL, emailContent);
+          const emailMessage = new EmailMessage(FROM_EMAIL, undefined as any, emailContent);
           await (env as any).SEND.send(emailMessage);
           console.log('[contact-worker] CF Email send OK');
         } else {
