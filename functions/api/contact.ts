@@ -8,23 +8,28 @@
 export const onRequest = async (context) => {
   const { request, env } = context;
 
-  // CORS handling
+  // CORS handling (environment-aware)
   const origin = request.headers.get('Origin') || '';
-  const allowedOrigins = [
-    'https://menairoofing-website.pages.dev',
-    'https://menairoofing.com',
+  const url = new URL(request.url);
+  const isLocalHost = url.hostname === 'localhost' || url.hostname === '127.0.0.1';
+
+  const devOrigins = [
     'http://localhost:3000',
     'http://127.0.0.1:3000',
     'http://localhost:5173',
     'http://127.0.0.1:5173',
   ];
-  const allowOrigin = allowedOrigins.includes(origin) ? origin : '*';
+  const prodOrigins = [
+    'https://www.menairoofing.com',
+    'https://menairoofing-website.pages.dev',
+  ];
+  const allowedOrigins = isLocalHost ? [...prodOrigins, ...devOrigins] : prodOrigins;
+  const allowOrigin = allowedOrigins.includes(origin) ? origin : '';
 
   if (request.method === 'OPTIONS') {
-    return new Response(null, {
-      status: 204,
-      headers: corsHeaders(allowOrigin),
-    });
+    // Only acknowledge preflight for allowed origins
+    const status = allowOrigin ? 204 : 403;
+    return new Response(null, { status, headers: corsHeaders(allowOrigin) });
   }
 
   if (request.method !== 'POST') {
