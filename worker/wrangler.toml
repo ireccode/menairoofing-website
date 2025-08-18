@@ -20,4 +20,4 @@ enabled = true
 [[send_email]]
 name = "SEND"
 # This must be a verified destination address in Email Routing → Destination addresses
-destination_address = "free432lancer@gmail.com"
+destination_address = "info@menairoofing.com"

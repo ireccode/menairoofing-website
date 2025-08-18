@@ -96,7 +96,7 @@ export const onRequest = async (context) => {
   });
 
   // Recipient and sender
-  const TO_EMAIL = env.TO_EMAIL || 'free432lancer@gmail.com'; // Update requested
+  const TO_EMAIL = env.TO_EMAIL || 'info@menairoofing.com'; // Update requested
   // Use a domain-sender you control/verify in Cloudflare to improve deliverability
   const FROM_EMAIL = env.FROM_EMAIL || 'noreply@menairoofing.com';
   const FROM_NAME = env.FROM_NAME || 'Menai Roofing Website';

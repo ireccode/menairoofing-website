@@ -147,10 +147,9 @@ Backend handler: `functions/api/contact.ts`
 
 Features:
 
-- **Validation**: `name`, `email`, and `pain_points` (or `message`) required; email format checked.
+- **Validation**: `name`, `email`, `message` required; email format checked.
 - **Spam/Honeypot**: ignores submissions with common honeypot fields.
 - **CORS**: allows specific origins; includes OPTIONS preflight.
-- **Email**: Sends responsive HTML email via MailChannels to `free432lancer@gmail.com`.
 - **JSON responses**: `{ success: true }` on success; on error `{ success: false, error, fields? }`.
 
 Expected form field names (mapped from the current multi-step form):
@@ -158,38 +157,8 @@ Expected form field names (mapped from the current multi-step form):
 - `name` (Full Name)
 - `email`
 - `phone` (optional)
-- `pain_points` (message-like field)
-- `timeline`
-- `budget`
-- `annual_revenue`
-- `contact_method` (defaults to `Email` if absent)
-- `goals` (array) and/or `ai_goal1..ai_goal10`, `ai_goal_other`
-
-Honeypot fields discarded if present: `hp`, `honeypot`, `_honey`, `bot_field`, `website`, `company_website`.
 
 HTML email includes clearly separated sections for each field and is responsive across clients.
-
-### Local/Remote Testing
-
-Use `curl` against your deployed Pages URL:
-
-```
-curl -X POST https://<your-pages-domain>/api/contact \
-  -H 'content-type: application/json' \
-  -d '{
-    "name":"Test User",
-    "email":"test@example.com",
-    "pain_points":"Leaking roof around chimney",
-    "timeline":"ASAP",
-    "budget":"$5k-$10k",
-    "annual_revenue":"n/a",
-    "contact_method":"Email",
-    "goals":["Inspection","Quote"],
-    "phone":"0400 000 000"
-  }'
-```
-
-You should receive `{ "success": true }`. Check the inbox `free432lancer@gmail.com`.
 
 ### Changing the Recipient
 
