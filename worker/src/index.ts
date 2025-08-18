@@ -6,20 +6,28 @@ import { EmailMessage } from 'cloudflare:email';
 
 export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
+    // CORS: environment-aware allow-list
     const origin = request.headers.get('Origin') || '';
-    const allowedOrigins = [
-      'https://menairoofing-website.pages.dev',
-      'https://www.menairoofing.com',
+    const url = new URL(request.url);
+    const isLocalHost = url.hostname === 'localhost' || url.hostname === '127.0.0.1';
+
+    const devOrigins = [
       'http://localhost:3000',
       'http://127.0.0.1:3000',
       'http://localhost:5173',
       'http://127.0.0.1:5173',
     ];
-    const allowOrigin = allowedOrigins.includes(origin) ? origin : '*';
+    const prodOrigins = [
+      'https://www.menairoofing.com',
+      'https://menairoofing-website.pages.dev',
+    ];
+    const allowedOrigins = isLocalHost ? [...prodOrigins, ...devOrigins] : prodOrigins;
+    const allowOrigin = allowedOrigins.includes(origin) ? origin : '';
 
     if (request.method === 'OPTIONS') {
       console.log('[contact-worker] OPTIONS preflight from', origin);
-      return new Response(null, { status: 204, headers: corsHeaders(allowOrigin) });
+      const status = allowOrigin ? 204 : 403;
+      return new Response(null, { status, headers: corsHeaders(allowOrigin) });
     }
 
     if (request.method !== 'POST') {
@@ -203,15 +211,16 @@ export default {
 };
 
 function corsHeaders(origin: string): HeadersInit {
-  return {
-    'Access-Control-Allow-Origin': origin,
+  const headers: Record<string, string> = {
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type, Authorization',
     'Access-Control-Max-Age': '86400',
   };
+  if (origin) headers['Access-Control-Allow-Origin'] = origin;
+  return headers;
 }
 
-function json(body: any, status = 200, origin = '*') {
+function json(body: any, status = 200, origin = '') {
   return new Response(JSON.stringify(body), {
     status,
     headers: {
