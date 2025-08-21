@@ -1,22 +1,13 @@
 User-agent: *
-Allow: /
+Disallow: /cdn-cgi/
+Disallow: /workers/  
+Disallow: /functions/
 
 # Sitemap location
-Sitemap: https://your-domain.com/sitemap.xml
+Sitemap: https://www.menairoofing.com/sitemap.xml
 
 # Crawl delay (optional)
 Crawl-delay: 1
-
-# Disallow specific paths (if any)
-# Disallow: /admin/
-# Disallow: /private/
-
-# Allow specific bots
-User-agent: Googlebot
-Allow: /
-
-User-agent: Bingbot
-Allow: /
 
 # Block specific bots (if needed)
 # User-agent: BadBot
